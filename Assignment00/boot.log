@@ -1,20 +1,20 @@
 --------
-Aug 24 15:41:46 +02:00 (none)  Mounting virtual file systems: /run /proc /sys OK
-Aug 24 15:41:47 +02:00 (none)  Bringing up the loopback interface... OK
-Aug 24 15:41:47 +02:00 (none)  Setting hostname to lnicosia... OK
-Aug 24 15:41:47 +02:00 lnicosia  Populating /dev with device nodes...  OK
-Aug 24 15:41:49 +02:00 lnicosia  Activating all swap files/partitions... OK
-Aug 24 15:41:50 +02:00 lnicosia  Mounting root file system in read-only mode...  OK
-Aug 24 15:41:50 +02:00 lnicosia  Checking file systems... OK
-Aug 24 15:41:50 +02:00 lnicosia  Remounting root file system in read-write mode... OK
-Aug 24 15:41:50 +02:00 lnicosia  Mounting remaining file systems... OK
-Aug 24 15:41:51 +02:00 lnicosia  Cleaning file systems: OK
-Aug 24 15:41:52 +02:00 lnicosia  Retrying failed uevents, if any... OK
-Aug 24 15:41:52 +02:00 lnicosia  Setting up Linux console... OK
-Aug 24 15:41:53 +02:00 lnicosia  Starting system log daemon... OK
-Aug 24 15:41:53 +02:00 lnicosia  Starting kernel log daemon... OK
-Aug 24 15:41:54 +02:00 lnicosia  Bringing up the enp0s3 interface... OK
-Aug 24 15:41:54 +02:00 lnicosia  Adding IPv4 address 10.0.2.15 to the enp0s3 interface... OK
-Aug 24 15:41:54 +02:00 lnicosia  Adding default gateway 10.0.2.2 to the enp0s3 interface... OK
-Aug 24 15:41:54 +02:00 lnicosia  Starting SSH Server... OK
+Aug 24 18:16:18 +02:00 (none)  Mounting virtual file systems: /run /proc /sys OK
+Aug 24 18:16:19 +02:00 (none)  Bringing up the loopback interface... OK
+Aug 24 18:16:19 +02:00 (none)  Setting hostname to lnicosia... OK
+Aug 24 18:16:19 +02:00 lnicosia  Populating /dev with device nodes...  OK
+Aug 24 18:16:20 +02:00 lnicosia  Activating all swap files/partitions... OK
+Aug 24 18:16:20 +02:00 lnicosia  Mounting root file system in read-only mode...  OK
+Aug 24 18:16:20 +02:00 lnicosia  Checking file systems... OK
+Aug 24 18:16:20 +02:00 lnicosia  Remounting root file system in read-write mode... OK
+Aug 24 18:16:20 +02:00 lnicosia  Mounting remaining file systems... OK
+Aug 24 18:16:12 +02:00 lnicosia  Cleaning file systems: OK
+Aug 24 18:16:12 +02:00 lnicosia  Retrying failed uevents, if any... OK
+Aug 24 18:16:12 +02:00 lnicosia  Setting up Linux console... OK
+Aug 24 18:16:13 +02:00 lnicosia  Starting system log daemon... OK
+Aug 24 18:16:13 +02:00 lnicosia  Starting kernel log daemon... OK
+Aug 24 18:16:13 +02:00 lnicosia  Bringing up the enp0s3 interface... OK
+Aug 24 18:16:13 +02:00 lnicosia  Adding IPv4 address 10.0.2.15 to the enp0s3 interface... OK
+Aug 24 18:16:13 +02:00 lnicosia  Adding default gateway 10.0.2.2 to the enp0s3 interface... OK
+Aug 24 18:16:14 +02:00 lnicosia  Starting SSH Server... OK
 --------
