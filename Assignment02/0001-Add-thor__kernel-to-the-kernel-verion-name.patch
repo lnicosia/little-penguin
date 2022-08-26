@@ -1,0 +1,28 @@
+From babef25032bd503583ea9fd8f333372a07f9c8f6 Mon Sep 17 00:00:00 2001
+From: lnicosia <lnicosia@student.42.fr>
+Date: Fri, 26 Aug 2022 17:49:58 +0200
+Subject: [PATCH] Add -thor__kernel to the kernel verion name.
+
+Add -thor__kernel to the kernel version name in the Makefile
+
+Signed-off-by: lnicosia <lnicosia@student.42.fr>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index c7705f749601..73409f8129be 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 6
+ PATCHLEVEL = 0
+ SUBLEVEL = 0
+-EXTRAVERSION = -rc2
++EXTRAVERSION = -thor__kernel
+ NAME = Hurr durr I'ma ninja sloth
+ 
+ # *DOCUMENTATION*
+-- 
+2.33.0
+
