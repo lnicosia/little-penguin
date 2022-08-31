@@ -7,12 +7,39 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lucas Nicosia <lnicosia@student.42.fr>");
-MODULE_DESCRIPTION("Listing mountpoint module.");
+MODULE_DESCRIPTION("Mountpoints listing module.");
+
+struct mount {
+	struct list_head		mnt_hash;
+	struct mount			*mnt_parent;
+	struct dentry			*mnt_mountpoint;
+	struct vfsmount			mnt;
+	int						mnt_count;
+	int						mnt_writers;
+	struct list_head		mnt_mounts;
+	struct list_head		mnt_child;
+	struct list_head		mnt_instance;
+	const char				*mnt_devname;
+	struct list_head		mnt_list;
+	struct list_head		mnt_expire;
+	struct list_head		mnt_share;
+	struct list_head		mnt_slave_list;
+	struct list_head		mnt_slave;
+	struct mount			*mnt_master;
+	struct mnt_namespace	*mnt_ns;
+	int						mnt_id;
+	int						mnt_group_id;
+	int						mnt_expiry_mark;
+	int						mnt_pinned;
+	int						mnt_ghosts;
+};
 
 struct mnt_namespace {
-	atomic_t count;
-	struct mount *root;
-	struct list_head list;
+	atomic_t			count;
+	struct mount		*root;
+	struct list_head	list;
+	wait_queue_head_t	poll;
+	int					event;
 };
 
 static struct proc_dir_entry *mymounts;
@@ -26,7 +53,7 @@ static ssize_t list_mountpoints(struct file *file, char __user *buf,
 
 	pr_info("Listing mountpoints\n");
 	list_for_each_entry(mnt, &ns->list, mnt_list) {
-		pr_info("Mountpoint\n");
+		pr_info("Mountpoint found\n");
 	}
 	return 0;
 }
@@ -42,14 +69,14 @@ static int __init	mymounts_init(void)
 		return -1;
 	}
 
-	pr_info("Listing mountpoints module loaded !\n");
+	pr_info("Mountpoints listing module loaded !\n");
 	return 0;
 }
 
 static void __exit	mymounts_cleanup(void)
 {
 	proc_remove(mymounts);
-	pr_info("Cleaning up listing mountpoints module.\n");
+	pr_info("Cleaning up mountpoints listing module.\n");
 }
 
 module_init(mymounts_init);
