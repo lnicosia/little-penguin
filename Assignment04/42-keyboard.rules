@@ -1,0 +1,1 @@
+ACTION=="add", SUBSYSTEM=="usb", RUN+="/sbin/insmod /home/lucas/little-penguin/Assignment04/my_module.ko", RUN+="/usr/bin/echo coucou > /home/lucas/little-penguin/Assignment04/coucou.txt"
