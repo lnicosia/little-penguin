@@ -1,1 +1,2 @@
-ACTION=="add", SUBSYSTEM=="usb", RUN+="/sbin/insmod /home/lucas/little-penguin/Assignment04/super-cool-keyboard-module.ko"
+ACTION=="add", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="03", ATTR{bInterfaceProtocol}=="01", RUN+="/sbin/insmod /home/lucas/little-penguin/Assignment04/super-cool-keyboard-module.ko"
+ACTION=="remove", SUBSYSTEM=="usb", ATTR{bInterfaceClass}=="03", ATTR{bInterfaceProtocol}=="01", RUN+="/sbin/rmmod super-cool-keyboard-module"
