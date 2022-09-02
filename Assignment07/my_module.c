@@ -4,6 +4,7 @@
 #include <linux/miscdevice.h>
 #include <linux/fs.h>
 #include <linux/debugfs.h>
+#include <linux/mutex.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lucas Nicosia <lnicosia@student.42.fr>");
@@ -16,6 +17,8 @@ struct dentry *djiffies;
 struct dentry *dfoo;
 
 char foo_data[PAGE_SIZE];
+
+DEFINE_MUTEX(foo_mutex);
 
 static ssize_t write_student_login(struct file *file, const char __user *buf,
 		size_t len, loff_t *ppos)
@@ -47,19 +50,25 @@ static ssize_t read_jiffies_timer(struct file *filp, char __user *buf,
 static ssize_t write_foo(struct file *file, const char __user *buf,
 		size_t len, loff_t *ppos)
 {
-	pr_info("Len = %ld\n", len);
-	if (len > PAGE_SIZE) {
-		pr_err("Writing too much data!\n");
-		return -1;
-	}
-	return simple_write_to_buffer(foo_data, len, ppos, buf, len);
+	ssize_t	ret;
+
+	mutex_lock(&foo_mutex);
+	ret = simple_write_to_buffer(foo_data, PAGE_SIZE, ppos, buf, len);
+	mutex_unlock(&foo_mutex);
+	return ret;
 }
 
 static ssize_t read_foo(struct file *filp, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
-	size_t len = strlen(foo_data);
-	return simple_read_from_buffer(buf, count, f_pos, foo_data, len);
+	ssize_t	ret;
+	size_t len;
+
+	mutex_lock(&foo_mutex);
+	len = strlen(foo_data);
+	ret = simple_read_from_buffer(buf, count, f_pos, foo_data, len);
+	mutex_unlock(&foo_mutex);
+	return ret;
 }
 
 static const struct file_operations login_fops = {
