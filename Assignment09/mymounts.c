@@ -5,12 +5,13 @@
 #include <linux/nsproxy.h>
 #include <linux/mount.h>
 #include <linux/list.h>
+#include <../fs/mount.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Lucas Nicosia <lnicosia@student.42.fr>");
 MODULE_DESCRIPTION("Mountpoints listing module.");
 
-struct mount {
+/*struct mount {
 	struct list_head		mnt_hash;
 	struct mount			*mnt_parent;
 	struct dentry			*mnt_mountpoint;
@@ -41,54 +42,32 @@ struct mnt_namespace {
 	struct list_head	list;
 	wait_queue_head_t	poll;
 	int					event;
-};
+};*/
 
 static struct proc_dir_entry *mymounts;
 
 static ssize_t list_mountpoints(struct file *file, char __user *buf,
 		size_t len, loff_t *ppos)
 {
-	//char *bpath = kmalloc(1024, GFP_KERNEL);
 	char bpath[1024];
 	char *p = NULL;
 	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
-	struct mount *mnt = ns->root;
-	struct mount *mnt2;
-	struct path mnt_path = {
-		.mnt = &mnt->mnt,
-		.dentry = mnt->mnt.mnt_root,
-	};
+	struct mount *mnt;
+	struct path mnt_path;
 
 	memset(bpath, 0, 1024);
-	(void)mnt_path;
 	pr_info("Listing mountpoints\n");
-	if (!ns)
-		pr_info("ns is NULL!\n");
-	if (!mnt)
-		pr_info("mnt is NULL!\n");
-	if (!(&mnt->mnt))
-		pr_info("mnt->mnt is NULL!\n");
-	if (!mnt->mnt.mnt_root)
-		pr_info("mnt->mnt.mnt_root is NULL!\n");
-	/*p = d_path(&mnt_path, bpath, 1024);
-	if (IS_ERR(p)) {
-		pr_info("d_path() failed\n");
-		goto free_bpath;
-	}*/
-	pr_info("Mount = ");
-	pr_info("'%s'\n", p);
-	list_for_each_entry(mnt2, &ns->list, mnt_list) {
-		pr_info("Mountpoint found\n");
-		pr_info("Mnt devname = '%s'\n", mnt2->mnt_devname);
-		pr_info("Mnt id = %d\n", mnt2->mnt_id);
-		pr_info("Mnt group id = %d\n", mnt2->mnt_group_id);
-		pr_info("Mnt count = %d\n", mnt2->mnt_count);
-		pr_info("Mnt expiry mark = %d\n", mnt2->mnt_expiry_mark);
-		pr_info("Mnt pinned = %d\n", mnt2->mnt_pinned);
-		pr_info("Mnt ghosts = %d\n", mnt2->mnt_ghosts);
+	list_for_each_entry(mnt, &ns->list, mnt_list) {
+   		mnt_path.mnt = &mnt->mnt;
+		mnt_path.dentry = mnt->mnt.mnt_root;
+		p = d_path(&mnt_path, bpath, 1024);
+		if (IS_ERR(p)) {
+			pr_info("d_path() failed\n");
+			return -1;
+		}
+		if (mnt->mnt_id != 1)
+			pr_info("%s\t\t%s\n", mnt->mnt_devname, p);
 	}
-//free_bpath:
-	//kfree(bpath);
 	return 0;
 }
 
