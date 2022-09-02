@@ -29,11 +29,7 @@ static ssize_t write_student_login(struct file *file, const char __user *buf,
 static ssize_t read_student_login(struct file *filp, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
-	if (copy_to_user(buf, "lnicosia\0", 9)) {
-		pr_err("Copy to user failed\n");
-		return -1;
-	}
-	return 9;
+	return simple_read_from_buffer(buf, count, f_pos, "lnicosia\0", 8);
 }
 
 static ssize_t read_jiffies_timer(struct file *filp, char __user *buf,
@@ -45,9 +41,7 @@ static ssize_t read_jiffies_timer(struct file *filp, char __user *buf,
 	len = sprintf(local_buf, "%ld", jiffies);
 	if (len < 16)
 		local_buf[len] = 0;
-	if (simple_read_from_buffer(buf, count, f_pos, "lnicosia", len))
-		pr_err("Copy to user failed\n");
-	return len;
+	return simple_read_from_buffer(buf, count, f_pos, local_buf, len);
 }
 
 static ssize_t write_foo(struct file *file, const char __user *buf,
@@ -58,22 +52,14 @@ static ssize_t write_foo(struct file *file, const char __user *buf,
 		pr_err("Writing too much data!\n");
 		return -1;
 	}
-	if (simple_write_to_buffer(foo_data, len, ppos, buf, len)) {
-		pr_err("Copy from user failed\n");
-		return -1;
-	}
-	return 0;
+	return simple_write_to_buffer(foo_data, len, ppos, buf, len);
 }
 
 static ssize_t read_foo(struct file *filp, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
 	size_t len = strlen(foo_data);
-	if (simple_read_from_buffer(buf, count, f_pos, foo_data, len)) {
-		pr_err("Copy to user failed\n");
-		return -1;
-	}
-	return len;
+	return simple_read_from_buffer(buf, count, f_pos, foo_data, len);
 }
 
 static const struct file_operations login_fops = {
