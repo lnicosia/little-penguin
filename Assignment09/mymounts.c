@@ -18,8 +18,6 @@ struct mounts_output {
 };
 
 static struct proc_dir_entry *mymounts;
-static struct mounts_output mnt_output;
-static char *out_buf;
 
 static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 {
@@ -57,11 +55,15 @@ static ssize_t list_mountpoints(struct file *file, char __user *buf,
 	char bpath[1024];
 	char *p = NULL;
 	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
+	struct mounts_output mnt_output;
 	struct mount *mnt;
 	struct path mnt_path;
-	int ret;
+	int printf_ret;
+	ssize_t ret;
+	char *out_buf;
 
 	ret = 0;
+	printf_ret = 0;
 	memset(bpath, 0, 1024);
 	mnt_output = get_mount_output(ns);
 	if (!(out_buf = kmalloc(mnt_output.total_len,
@@ -75,14 +77,17 @@ static ssize_t list_mountpoints(struct file *file, char __user *buf,
 		p = d_path(&mnt_path, bpath, 1024);
 		if (IS_ERR(p)) {
 			pr_info("d_path() failed\n");
-			return -1;
+			goto free_out_buf;
 		}
 		if (mnt->mnt_id != 1) {
-			ret += sprintf(out_buf + ret, "%-*s%s\n",
+			printf_ret += sprintf(out_buf + printf_ret, "%-*s%s\n",
 					mnt_output.padding, mnt->mnt_devname, p);
 		}
 	}
-	return simple_read_from_buffer(buf, count, f_pos, out_buf, mnt_output.total_len);
+	ret = simple_read_from_buffer(buf, count, f_pos, out_buf, mnt_output.total_len);
+free_out_buf:
+	kfree(out_buf);
+	return ret;
 }
 
 static struct proc_ops mountlist_ops = {
@@ -101,7 +106,6 @@ static int __init	mymounts_init(void)
 
 static void __exit	mymounts_cleanup(void)
 {
-	kfree(out_buf);
 	proc_remove(mymounts);
 	pr_info("Cleaning up mountpoints listing module.\n");
 }
