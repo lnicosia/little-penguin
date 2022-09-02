@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 
 int	main(int ac, char **av)
 {
@@ -13,17 +14,35 @@ int	main(int ac, char **av)
 		return -1;
 	}
 
-	/*	Reading */
-	printf("Reading /dev/fortytwo...\n");
+	/*	Reading	*/
+	memset(buf, 0, 1024);
+	lseek(fd, 0, SEEK_SET);
+	printf("Reading 1024 bytes /dev/fortytwo...\n");
 	if ((ret = read(fd, buf, 1024)) == -1)
 	{
 		perror("read on /dev/fortytwo");
 		goto close_fd;
 	}
+	printf("Ret = %ld\n", ret);
 	if (ret > 0 && ret != 1024)
 		buf[ret] = 0;
 	printf("File contains '%s'\n", buf);
-
+	
+	close(fd);
+	fd = open("/dev/fortytwo", O_RDWR);
+	/*	Reading 2 bytes	*/
+	memset(buf, 0, 1024);
+	lseek(fd, 0, SEEK_SET);
+	printf("Reading 2 bytes /dev/fortytwo...\n");
+	if ((ret = read(fd, buf, 2)) == -1)
+	{
+		perror("read on /dev/fortytwo");
+		goto close_fd;
+	}
+	printf("Ret = %ld\n", ret);
+	if (ret > 0 && ret != 2)
+		buf[ret] = 0;
+	printf("File contains '%s'\n", buf);
 	/*	Writing	*/
 	printf("Writing in /dev/fortytwo...\n");
 

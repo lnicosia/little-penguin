@@ -20,11 +20,7 @@ static ssize_t write_student_login(struct file *file, const char __user *buf,
 static ssize_t read_student_login(struct file *filp, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
-	if (copy_to_user(buf, "lnicosia\0", 9)) {
-		pr_err("Copy to user failed\n");
-		return -1;
-	}
-	return 9;
+	return simple_read_from_buffer(buf, count, f_pos, "lnicosia\0", 8);
 }
 
 static const struct file_operations fops = {
