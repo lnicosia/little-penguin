@@ -54,15 +54,6 @@ static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 static ssize_t list_mountpoints(struct file *file, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
-	return simple_read_from_buffer(buf, count, f_pos, out_buf, mnt_output.total_len);
-}
-
-static struct proc_ops mountlist_ops = {
-	.proc_read = &list_mountpoints
-};
-
-static int __init	mymounts_init(void)
-{
 	char bpath[1024];
 	char *p = NULL;
 	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
@@ -70,13 +61,8 @@ static int __init	mymounts_init(void)
 	struct path mnt_path;
 	int ret;
 
-	if ((mymounts = proc_create("mymounts", 0444, NULL, &mountlist_ops)) == NULL) {
-		pr_err("Could not create /proc file\n");
-		return -1;
-	}
 	ret = 0;
 	memset(bpath, 0, 1024);
-	pr_info("Listing %d mountpoints\n", ns->mounts - 1);
 	mnt_output = get_mount_output(ns);
 	if (!(out_buf = kmalloc(mnt_output.total_len,
 					GFP_KERNEL))) {
@@ -92,12 +78,23 @@ static int __init	mymounts_init(void)
 			return -1;
 		}
 		if (mnt->mnt_id != 1) {
-			pr_info("%-*s%s\n", mnt_output.padding, mnt->mnt_devname, p);
 			ret += sprintf(out_buf + ret, "%-*s%s\n",
 					mnt_output.padding, mnt->mnt_devname, p);
 		}
 	}
+	return simple_read_from_buffer(buf, count, f_pos, out_buf, mnt_output.total_len);
+}
 
+static struct proc_ops mountlist_ops = {
+	.proc_read = &list_mountpoints
+};
+
+static int __init	mymounts_init(void)
+{
+	if ((mymounts = proc_create("mymounts", 0444, NULL, &mountlist_ops)) == NULL) {
+		pr_err("Could not create /proc file\n");
+		return -1;
+	}
 	pr_info("Mountpoints listing module loaded !\n");
 	return 0;
 }
