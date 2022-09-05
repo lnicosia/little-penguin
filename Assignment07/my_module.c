@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -24,6 +26,7 @@ static ssize_t write_student_login(struct file *file, const char __user *buf,
 		size_t len, loff_t *ppos)
 {
 	size_t cmp_len = len < 8 ? 8 : len;
+
 	if (strncmp("lnicosia", buf, cmp_len) == 0)
 		return strlen("lnicosia");
 	return -EINVAL;
@@ -90,26 +93,29 @@ static const struct file_operations foo_fops = {
 
 static int __init debugfs_stuff_init(void)
 {
-   	if ((ddir = debugfs_create_dir("fortytwo", NULL)) == NULL) {
+	ddir = debugfs_create_dir("fortytwo", NULL);
+	if (ddir == NULL) {
 		pr_err("Cannot create debugfs directory\n");
 		return -1;
 	}
-   	if ((did = debugfs_create_file("id",
-			S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
-			ddir, NULL, &login_fops)) == NULL) {
+	did = debugfs_create_file("id",
+					S_IRWXU | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH,
+					ddir, NULL, &login_fops);
+	if (did == NULL) {
 		pr_err("Cannot create id file\n");
 		goto remove_debugfs;
 	}
-   	if ((djiffies = debugfs_create_file("jiffies",
-			S_IRUSR | S_IRGRP | S_IROTH,
-			ddir, NULL, &jiffies_fops)) == NULL) {
+	djiffies = debugfs_create_file("jiffies",
+					S_IRUSR | S_IRGRP | S_IROTH,
+					ddir, NULL, &jiffies_fops);
+	if (djiffies == NULL) {
 		pr_err("Cannot create jiffies file\n");
 		goto remove_debugfs;
 	}
 	memset(foo_data, 0, PAGE_SIZE);
-   	debugfs_create_file_size("foo",
+	debugfs_create_file_size("foo",
 			S_IRWXU | S_IRGRP | S_IROTH,
-			ddir, foo_data, &foo_fops, PAGE_SIZE); 
+			ddir, foo_data, &foo_fops, PAGE_SIZE);
 	pr_info("Debugfs stuff module loaded !\n");
 	return 0;
 remove_debugfs:
