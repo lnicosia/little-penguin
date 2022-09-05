@@ -3,17 +3,16 @@
 #include <stdio.h>
 #include <string.h>
 
+#define PAGE_SIZE 4096
 int	main(int ac, char **av)
 {
-	char	buf[1024];
+	char	buf[PAGE_SIZE];
 	ssize_t	ret;
 	int	id_fd;
 	int	jiffies_fd;
 	int	foo_fd;
 	uid_t	id;
 
-	setuid(0);
-	seteuid(0);
 	id = getuid();
 	if (id == 1000)
 		printf("Logged as lucas\n");
@@ -26,15 +25,16 @@ int	main(int ac, char **av)
 		return -1;
 	}
 	printf("/sys/kernel/debug/fortytwo/id fd = %d\n", id_fd);
+	
 	/*	Open /sys/kernel/debug/jiffies */
 	if ((jiffies_fd = open("/sys/kernel/debug/fortytwo/jiffies", O_RDONLY)) == -1) {
 		perror("open on /sys/kernel/debug/fortytwo/jiffies");
 		goto close_id_fd;
 	}
 	printf("/sys/kernel/debug/fortytwo/jiffies fd = %d\n", jiffies_fd);
+
 	/*	Open /sys/kernel/debug/foo */
-	mode_t mode = id == 0 ? O_RDWR : O_RDONLY;
-	if ((foo_fd = open("/sys/kernel/debug/fortytwo/foo", mode)) == -1) {
+	if ((foo_fd = open("/sys/kernel/debug/fortytwo/foo", O_RDWR)) == -1) {
 		perror("open on /sys/kernel/debug/fortytwo/foo");
 		goto close_jiffies_fd;
 	}
@@ -42,36 +42,55 @@ int	main(int ac, char **av)
 
 	printf("\n--Reading--\n");
 	/*	Reading id */
+	bzero(buf, PAGE_SIZE);
 	printf("Reading /sys/kernel/debug/fortytwo/id...\n");
-	if ((ret = read(id_fd, buf, 1024)) == -1)
+	if ((ret = read(id_fd, buf, PAGE_SIZE)) == -1)
 	{
 		perror("read on /sys/kernel/debug/fortytwo/id");
 		goto close_foo_fd;
 	}
-	if (ret > 0 && ret != 1024)
+	if (ret > 0 && ret != PAGE_SIZE)
 		buf[ret] = 0;
 	printf("File contains '%s'\n", buf);
+	close(id_fd);
+	id_fd = open("/sys/kernel/debug/fortytwo/id", O_RDWR);
+	for (int i = 0; i < 10; i++) {
+		bzero(buf, PAGE_SIZE);
+		printf("Reading 1 byte in /sys/kernel/debug/fortytwo/id...\n");
+		if ((ret = read(id_fd, buf, 1)) == -1)
+		{
+			perror("read on /sys/kernel/debug/fortytwo/id");
+			goto close_foo_fd;
+		}
+		if (ret > 0 && ret != PAGE_SIZE)
+			buf[ret] = 0;
+		buf[PAGE_SIZE] = 0;
+		printf("File contains '%s'\n", buf);
+	}
 
 	/*	Reading jiffies */
 	printf("Reading /sys/kernel/debug/fortytwo/jiffies...\n");
-	if ((ret = read(jiffies_fd, buf, 1024)) == -1)
+	bzero(buf, PAGE_SIZE);
+	if ((ret = read(jiffies_fd, buf, PAGE_SIZE)) == -1)
 	{
 		perror("read on /sys/kernel/debug/fortytwo/jiffies");
 		goto close_foo_fd;
 	}
-	if (ret > 0 && ret != 1024)
+	if (ret > 0 && ret != PAGE_SIZE)
 		buf[ret] = 0;
 	printf("File contains '%s'\n", buf);
 
 	/*	Reading foo */
 	printf("Reading /sys/kernel/debug/fortytwo/foo...\n");
-	if ((ret = read(foo_fd, buf, 1024)) == -1)
+	bzero(buf, PAGE_SIZE);
+	if ((ret = read(foo_fd, buf, PAGE_SIZE)) == -1)
 	{
 		perror("read on /sys/kernel/debug/fortytwo/foo");
 		goto close_foo_fd;
 	}
-	if (ret > 0 && ret != 1024)
+	if (ret > 0 && ret != PAGE_SIZE)
 		buf[ret] = 0;
+	buf[PAGE_SIZE - 1] = 0;
 	printf("File contains '%s'\n", buf);
 
 	/*	Writing	*/
@@ -95,45 +114,50 @@ int	main(int ac, char **av)
 	printf("Writing toto..\n");
 	write(foo_fd, "toto", 4);
 	/*	Reading foo */
+	bzero(buf, PAGE_SIZE);
 	printf("Reading /sys/kernel/debug/fortytwo/foo...\n");
-	if ((ret = read(foo_fd, buf, 1024)) == -1)
+	close(foo_fd);
+	foo_fd = open("/sys/kernel/debug/fortytwo/foo", O_RDWR);
+	if ((ret = read(foo_fd, buf, PAGE_SIZE)) == -1)
 	{
 		perror("read on /sys/kernel/debug/fortytwo/foo");
 		goto close_foo_fd;
 	}
-	if (ret > 0 && ret != 1024)
+	if (ret > 0 && ret != PAGE_SIZE)
 		buf[ret] = 0;
+	buf[PAGE_SIZE - 1] = 0;
+	printf("ret = %d\n", ret);
 	printf("File contains '%s'\n", buf);
 
 	/*	Page size tests	*/
-#define BUF_SIZE 400
-	char buff_ok[BUF_SIZE];
-	memset(buff_ok, 'a', BUF_SIZE - 1);
-	buff_ok[4094] = 0;
-	char buff_ko[4097];
-	memset(buff_ko, 'o', 4097);
-	printf("Writing %d 'a'. Ret = %d\n", BUF_SIZE, write(foo_fd, buff_ok, BUF_SIZE));
+#define BUF_SIZE PAGE_SIZE * 2
+	char buff_ko[BUF_SIZE];
+	memset(buff_ko, 'a', BUF_SIZE);
+	printf("Writing %d 'a'. Ret = %d\n",
+			BUF_SIZE, write(foo_fd, buff_ko, BUF_SIZE));
 	/*	Reading foo */
+	bzero(buf, PAGE_SIZE);
 	printf("Reading /sys/kernel/debug/fortytwo/foo...\n");
-	if ((ret = read(foo_fd, buf, 1024)) == -1)
+	close(foo_fd);
+	foo_fd = open("/sys/kernel/debug/fortytwo/foo", O_RDWR);
+	if ((ret = read(foo_fd, buf, PAGE_SIZE)) == -1)
 	{
 		perror("read on /sys/kernel/debug/fortytwo/foo");
 		goto close_foo_fd;
 	}
-	if (ret > 0 && ret != 1024)
+	if (ret > 0 && ret != PAGE_SIZE)
 		buf[ret] = 0;
+	buf[PAGE_SIZE - 1] = 0;
+	printf("ret = %d\n", ret);
 	printf("File contains '%s'\n", buf);
-	//printf("Writing 4097 'o'. Ret = %d\n", write(foo_fd, buff_ko, 4097));
-	/*	Reading foo */
-	/*printf("Reading /sys/kernel/debug/fortytwo/foo...\n");
-	if ((ret = read(foo_fd, buf, 1024)) == -1)
-	{
-		perror("read on /sys/kernel/debug/fortytwo/foo");
-		goto close_foo_fd;
-	}
-	if (ret > 0 && ret != 1024)
-		buf[ret] = 0;
-	printf("File contains '%s'\n", buf);*/
+
+	/*	Opening foo in RDWR as lucas	*/
+	close(foo_fd);
+	setuid(1000);
+	seteuid(1000);
+	printf("Opening /sys/kernel/debug/fortytwo/foo in RDWR as lucas (uid = 1000)\n");
+	if ((foo_fd = open("/sys/kernel/debug/fortytwo/foo", O_RDWR)) == -1)
+		perror("open on /sys/kernel/debug/fortytwo/foo");
 close_foo_fd:
 	printf("/sys/kernel/debug/fortytwo/foo fd = %d\n", foo_fd);
 	close(foo_fd);

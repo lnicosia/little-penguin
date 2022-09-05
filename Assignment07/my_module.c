@@ -102,8 +102,7 @@ static int __init debugfs_stuff_init(void)
 	}
    	if ((djiffies = debugfs_create_file("jiffies",
 			S_IRUSR | S_IRGRP | S_IROTH,
-			ddir, NULL, &jiffies_fops)) == NULL)
-	{
+			ddir, NULL, &jiffies_fops)) == NULL) {
 		pr_err("Cannot create jiffies file\n");
 		goto remove_debugfs;
 	}
