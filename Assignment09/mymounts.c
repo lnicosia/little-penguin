@@ -71,7 +71,7 @@ static ssize_t list_mountpoints(struct file *file, char __user *buf,
 	out_buf = kmalloc(mnt_output.total_len, GFP_KERNEL);
 	if (out_buf == NULL) {
 		pr_err("Could not kmalloc output_buffer\n");
-		return -1;
+		return -ENOMEM;
 	}
 	list_for_each_entry(mnt, &ns->list, mnt_list) {
 		mnt_path.mnt = &mnt->mnt;
