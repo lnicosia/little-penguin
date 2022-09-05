@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -12,6 +14,7 @@ static ssize_t write_student_login(struct file *file, const char __user *buf,
 		size_t len, loff_t *ppos)
 {
 	size_t cmp_len = len < 8 ? 8 : len;
+
 	if (strncmp("lnicosia", buf, cmp_len) == 0)
 		return strlen("lnicosia");
 	return -EINVAL;
