@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL
+
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -19,6 +21,8 @@ struct mounts_output {
 
 static struct proc_dir_entry *mymounts;
 
+char bpath[PATH_MAX];
+
 static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 {
 	struct mount *mnt;
@@ -26,10 +30,9 @@ static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 	struct path mnt_path;
 	size_t len;
 	size_t max_devname_len;
-	char bpath[1024];
 	char *p;
 
-	memset(&res, 0, sizeof res);
+	memset(&res, 0, sizeof(res));
 	max_devname_len = 0;
 	list_for_each_entry(mnt, &ns->list, mnt_list) {
 		if (mnt->mnt_id != 1) {
@@ -38,7 +41,7 @@ static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 				max_devname_len = len;
 			mnt_path.mnt = &mnt->mnt;
 			mnt_path.dentry = mnt->mnt.mnt_root;
-			p = d_path(&mnt_path, bpath, 1024);
+			p = d_path(&mnt_path, bpath, PATH_MAX);
 			res.total_len += strlen(p);
 		}
 	}
@@ -52,7 +55,6 @@ static struct mounts_output get_mount_output(struct mnt_namespace *ns)
 static ssize_t list_mountpoints(struct file *file, char __user *buf,
 		size_t count, loff_t *f_pos)
 {
-	char bpath[1024];
 	char *p = NULL;
 	struct mnt_namespace *ns = current->nsproxy->mnt_ns;
 	struct mounts_output mnt_output;
@@ -64,17 +66,17 @@ static ssize_t list_mountpoints(struct file *file, char __user *buf,
 
 	ret = 0;
 	printf_ret = 0;
-	memset(bpath, 0, 1024);
+	memset(bpath, 0, sizeof(char) * PATH_MAX);
 	mnt_output = get_mount_output(ns);
-	if (!(out_buf = kmalloc(mnt_output.total_len,
-					GFP_KERNEL))) {
+	out_buf = kmalloc(mnt_output.total_len, GFP_KERNEL);
+	if (out_buf == NULL) {
 		pr_err("Could not kmalloc output_buffer\n");
 		return -1;
 	}
 	list_for_each_entry(mnt, &ns->list, mnt_list) {
-   		mnt_path.mnt = &mnt->mnt;
+		mnt_path.mnt = &mnt->mnt;
 		mnt_path.dentry = mnt->mnt.mnt_root;
-		p = d_path(&mnt_path, bpath, 1024);
+		p = d_path(&mnt_path, bpath, PATH_MAX);
 		if (IS_ERR(p)) {
 			pr_info("d_path() failed\n");
 			goto free_out_buf;
@@ -90,13 +92,14 @@ free_out_buf:
 	return ret;
 }
 
-static struct proc_ops mountlist_ops = {
+static const struct proc_ops mountlist_ops = {
 	.proc_read = &list_mountpoints
 };
 
-static int __init	mymounts_init(void)
+static int __init mymounts_init(void)
 {
-	if ((mymounts = proc_create("mymounts", 0444, NULL, &mountlist_ops)) == NULL) {
+	mymounts = proc_create("mymounts", 0444, NULL, &mountlist_ops);
+	if (mymounts == NULL) {
 		pr_err("Could not create /proc file\n");
 		return -1;
 	}
@@ -104,7 +107,7 @@ static int __init	mymounts_init(void)
 	return 0;
 }
 
-static void __exit	mymounts_cleanup(void)
+static void __exit mymounts_cleanup(void)
 {
 	proc_remove(mymounts);
 	pr_info("Cleaning up mountpoints listing module.\n");
