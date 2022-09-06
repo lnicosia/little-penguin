@@ -12,9 +12,9 @@ MODULE_AUTHOR("Louis Solofrizzo <louis@ne02ptzero.me>");
 MODULE_DESCRIPTION("Useless module");
 
 static ssize_t myfd_read(struct file *fp, char __user *user,
-		size_t size, loff_t *offs);
+			 size_t size, loff_t *offs);
 static ssize_t myfd_write(struct file *fp, const char __user *user,
-		size_t size, loff_t *offs);
+			  size_t size, loff_t *offs);
 
 static const struct file_operations myfd_fops = {
 	.owner = THIS_MODULE,
@@ -49,7 +49,7 @@ static void __exit myfd_cleanup(void)
 }
 
 ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
-		loff_t *offs)
+		  loff_t *offs)
 {
 	size_t t;
 	size_t i;
@@ -70,7 +70,7 @@ ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
 }
 
 ssize_t myfd_write(struct file *fp, const char __user *user, size_t size,
-		loff_t *offs)
+		   loff_t *offs)
 {
 	ssize_t res;
 
